@@ -30,13 +30,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                     onNavigate={(path) => navigate(path)}
                 />
 
-                <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
+                <div className="flex-1 flex flex-col h-screen overflow-hidden relative print:h-auto print:overflow-visible">
                     {/* Decorative Background Elements - Moved from AdminDashboard for consistency */}
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-200/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none print:hidden"></div>
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-200/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none print:hidden"></div>
 
                     {/* Mobile Header */}
-                    <div className="lg:hidden p-4 flex items-center justify-between bg-white/60 backdrop-blur-md border-b border-white z-30 sticky top-0">
+                    <div className="lg:hidden p-4 flex items-center justify-between bg-white/60 backdrop-blur-md border-b border-white z-30 sticky top-0 print:hidden">
                         <div className="flex items-center gap-2">
                             <img src="/sman1pati.png" alt="Logo" className="w-8 h-8 object-contain" />
                             <span className="font-bold text-slate-800">LaporJAMKOS</span>
@@ -46,7 +46,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                         </button>
                     </div>
 
-                    <main className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin scrollbar-thumb-violet-100 relative z-10 text-pretty">
+                    <main className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin scrollbar-thumb-violet-100 relative z-10 text-pretty print:overflow-visible print:h-auto">
                         <div className="max-w-6xl mx-auto space-y-8 animate-fadeIn pb-4">
                             {children}
                         </div>

@@ -138,21 +138,31 @@ export const Classes: React.FC = () => {
                         <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Data Kelas</h1>
                         <p className="text-slate-500 font-medium">Kelola daftar kelas dan kode QR</p>
                     </div>
-                    {role !== 'picket' && (
+                    <div className="flex gap-2 print:hidden">
                         <Button
-                            onClick={() => setShowAddModal(true)}
-                            className="bg-gradient-to-r from-violet-600 to-blue-600 shadow-lg shadow-violet-500/20"
+                            variant="secondary"
+                            onClick={() => window.print()}
+                            className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm"
                         >
-                            <Plus className="mr-2" size={20} />
-                            Tambah Kelas
+                            <Printer className="mr-2" size={20} />
+                            Cetak Daftar
                         </Button>
-                    )}
+                        {role !== 'picket' && (
+                            <Button
+                                onClick={() => setShowAddModal(true)}
+                                className="bg-gradient-to-r from-violet-600 to-blue-600 shadow-lg shadow-violet-500/20"
+                            >
+                                <Plus className="mr-2" size={20} />
+                                Tambah Kelas
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Main Card */}
                 <GlassCard className="!p-6 min-h-[500px] flex flex-col">
                     {/* Toolbar */}
-                    <div className="flex flex-col lg:flex-row gap-4 justify-between mb-8">
+                    <div className="flex flex-col lg:flex-row gap-4 justify-between mb-8 print:hidden">
                         <div className="relative w-full lg:w-96">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                             <input
@@ -236,7 +246,7 @@ export const Classes: React.FC = () => {
                                                     {role !== 'picket' && (
                                                         <button
                                                             onClick={() => handleDeleteClass(cls.id, cls.name)}
-                                                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors print:hidden"
                                                             title="Hapus"
                                                         >
                                                             <Trash2 size={18} />
@@ -251,7 +261,7 @@ export const Classes: React.FC = () => {
                                             <Button
                                                 variant="secondary"
                                                 onClick={() => handlePrint(cls)}
-                                                className="w-full py-2 text-sm bg-slate-50 hover:bg-violet-50 border-slate-200 hover:border-violet-200 text-slate-600 hover:text-violet-700"
+                                                className="w-full py-2 text-sm bg-slate-50 hover:bg-violet-50 border-slate-200 hover:border-violet-200 text-slate-600 hover:text-violet-700 print:hidden"
                                             >
                                                 <Printer className="mr-2" size={16} />
                                                 Cetak QR
@@ -280,7 +290,7 @@ export const Classes: React.FC = () => {
                                                 <Button
                                                     variant="secondary"
                                                     onClick={() => handlePrint(cls)}
-                                                    className="hidden sm:flex py-1.5 px-3 text-xs bg-slate-50 hover:bg-violet-50 border-slate-200 hover:border-violet-200 text-slate-600 hover:text-violet-700"
+                                                    className="hidden sm:flex py-1.5 px-3 text-xs bg-slate-50 hover:bg-violet-50 border-slate-200 hover:border-violet-200 text-slate-600 hover:text-violet-700 print:hidden"
                                                 >
                                                     <Printer className="mr-2" size={14} />
                                                     Cetak
@@ -291,7 +301,7 @@ export const Classes: React.FC = () => {
                                                 {role !== 'picket' && (
                                                     <button
                                                         onClick={() => handleInitEdit(cls)}
-                                                        className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                                                        className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors print:hidden"
                                                         title="Edit"
                                                     >
                                                         <Pencil size={18} />
@@ -299,7 +309,7 @@ export const Classes: React.FC = () => {
                                                 )}
                                                 <button
                                                     onClick={() => setViewingQrClass(cls)}
-                                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors print:hidden"
                                                     title="Lihat QR"
                                                 >
                                                     <Eye size={18} />
@@ -307,7 +317,7 @@ export const Classes: React.FC = () => {
                                                 {role !== 'picket' && (
                                                     <button
                                                         onClick={() => handleDeleteClass(cls.id, cls.name)}
-                                                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors print:hidden"
                                                         title="Hapus"
                                                     >
                                                         <Trash2 size={18} />
