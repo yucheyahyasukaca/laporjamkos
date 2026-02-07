@@ -1,5 +1,16 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { LayoutDashboard, Users, FileText, LogOut } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+
+interface SidebarProps {
+    onLogout: () => void;
+    isOpen: boolean;
+    setIsOpen: (isOpen: boolean) => void;
+    onNavigate?: (path: string) => void;
+}
+
+
+import { useUserRole } from '../hooks/useUserRole';
 
 interface SidebarProps {
     onLogout: () => void;
@@ -9,6 +20,21 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ onLogout, isOpen, setIsOpen, onNavigate }) => {
+    const [userEmail, setUserEmail] = useState('Loading...');
+    const { role } = useUserRole();
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                setUserEmail(user.email || 'No Email');
+            }
+        };
+        fetchUser();
+    }, []);
+
+    const displayRole = role === 'picket' ? 'Guru Piket' : 'Administrator';
+
     return (
         <>
             {/* Mobile Overlay */}
@@ -63,11 +89,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ onLogout, isOpen, setIsOpen, o
                     <div className="bg-white/40 rounded-2xl p-4 backdrop-blur-sm border border-white/50">
                         <div className="flex items-center gap-3 mb-3">
                             <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold border border-white">
-                                A
+                                {role === 'picket' ? 'P' : 'A'}
                             </div>
                             <div className="overflow-hidden">
-                                <p className="text-sm font-bold text-slate-800 truncate">Administrator</p>
-                                <p className="text-xs text-slate-500 truncate">admin@sekolah.sch.id</p>
+                                <p className="text-sm font-bold text-slate-800 truncate">{displayRole}</p>
+                                <p className="text-xs text-slate-500 truncate">{userEmail}</p>
                             </div>
                         </div>
                         <button

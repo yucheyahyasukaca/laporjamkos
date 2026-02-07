@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminLayout } from '../components/AdminLayout'; // Import AdminLayout
@@ -6,9 +7,10 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Modal } from '../components/Modal';
 import { supabase } from '../lib/supabase';
-import { Search, Plus, Trash2, Printer, Eye, Users, LayoutGrid, List } from 'lucide-react';
+import { Search, Plus, Trash2, Printer, Eye, Users, LayoutGrid, List, Pencil } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import type { Class } from '../types/database';
+import { useUserRole } from '../hooks/useUserRole';
 
 export const Classes: React.FC = () => {
     const [classes, setClasses] = useState<Class[]>([]);
@@ -17,10 +19,14 @@ export const Classes: React.FC = () => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [newClassName, setNewClassName] = useState('');
     const [isAdding, setIsAdding] = useState(false);
+    const [editingClass, setEditingClass] = useState<Class | null>(null);
+    const [editClassName, setEditClassName] = useState('');
     const [viewingQrClass, setViewingQrClass] = useState<Class | null>(null);
     const [printingClass, setPrintingClass] = useState<Class | null>(null);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
     const navigate = useNavigate();
+
+    const { role } = useUserRole();
 
     useEffect(() => {
         checkAuth();
@@ -66,6 +72,34 @@ export const Classes: React.FC = () => {
         }
     };
 
+    const handleInitEdit = (cls: Class) => {
+        setEditingClass(cls);
+        setEditClassName(cls.name);
+    };
+
+    const handleUpdateClass = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editClassName.trim() || !editingClass) return;
+
+        setIsAdding(true);
+        try {
+            const { error } = await supabase
+                .from('classes')
+                .update({ name: editClassName })
+                .eq('id', editingClass.id);
+
+            if (error) throw error;
+
+            setEditingClass(null);
+            setEditClassName('');
+            fetchClasses();
+        } catch (err) {
+            console.error('Error updating class:', err);
+        } finally {
+            setIsAdding(false);
+        }
+    };
+
     const handleDeleteClass = async (id: string, name: string) => {
         if (!confirm(`Apakah Anda yakin ingin menghapus kelas ${name}?`)) return;
 
@@ -104,13 +138,15 @@ export const Classes: React.FC = () => {
                         <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Data Kelas</h1>
                         <p className="text-slate-500 font-medium">Kelola daftar kelas dan kode QR</p>
                     </div>
-                    <Button
-                        onClick={() => setShowAddModal(true)}
-                        className="bg-gradient-to-r from-violet-600 to-blue-600 shadow-lg shadow-violet-500/20"
-                    >
-                        <Plus className="mr-2" size={20} />
-                        Tambah Kelas
-                    </Button>
+                    {role !== 'picket' && (
+                        <Button
+                            onClick={() => setShowAddModal(true)}
+                            className="bg-gradient-to-r from-violet-600 to-blue-600 shadow-lg shadow-violet-500/20"
+                        >
+                            <Plus className="mr-2" size={20} />
+                            Tambah Kelas
+                        </Button>
+                    )}
                 </div>
 
                 {/* Main Card */}
@@ -181,6 +217,15 @@ export const Classes: React.FC = () => {
                                                     {cls.name.substring(0, 2)}
                                                 </div>
                                                 <div className="flex gap-1">
+                                                    {role !== 'picket' && (
+                                                        <button
+                                                            onClick={() => handleInitEdit(cls)}
+                                                            className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                                                            title="Edit"
+                                                        >
+                                                            <Pencil size={18} />
+                                                        </button>
+                                                    )}
                                                     <button
                                                         onClick={() => setViewingQrClass(cls)}
                                                         className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -188,13 +233,15 @@ export const Classes: React.FC = () => {
                                                     >
                                                         <Eye size={18} />
                                                     </button>
-                                                    <button
-                                                        onClick={() => handleDeleteClass(cls.id, cls.name)}
-                                                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title="Hapus"
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
+                                                    {role !== 'picket' && (
+                                                        <button
+                                                            onClick={() => handleDeleteClass(cls.id, cls.name)}
+                                                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                            title="Hapus"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
 
@@ -241,6 +288,15 @@ export const Classes: React.FC = () => {
 
                                                 <div className="w-px h-6 bg-slate-200 mx-1 hidden sm:block"></div>
 
+                                                {role !== 'picket' && (
+                                                    <button
+                                                        onClick={() => handleInitEdit(cls)}
+                                                        className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                                                        title="Edit"
+                                                    >
+                                                        <Pencil size={18} />
+                                                    </button>
+                                                )}
                                                 <button
                                                     onClick={() => setViewingQrClass(cls)}
                                                     className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -248,13 +304,15 @@ export const Classes: React.FC = () => {
                                                 >
                                                     <Eye size={18} />
                                                 </button>
-                                                <button
-                                                    onClick={() => handleDeleteClass(cls.id, cls.name)}
-                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    title="Hapus"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
+                                                {role !== 'picket' && (
+                                                    <button
+                                                        onClick={() => handleDeleteClass(cls.id, cls.name)}
+                                                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        title="Hapus"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -305,6 +363,47 @@ export const Classes: React.FC = () => {
                     </div>
                 </Modal>
 
+                {/* Edit Class Modal */}
+                <Modal isOpen={!!editingClass} onClose={() => setEditingClass(null)}>
+                    <div className="p-4">
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-600">
+                                <Pencil size={32} />
+                            </div>
+                            <h3 className="text-2xl font-bold text-slate-800">Edit Data Kelas</h3>
+                            <p className="text-slate-500">Perbarui nama kelas</p>
+                        </div>
+
+                        <form onSubmit={handleUpdateClass}>
+                            <Input
+                                value={editClassName}
+                                onChange={(e) => setEditClassName(e.target.value)}
+                                placeholder="Contoh: XII IPA 1"
+                                className="mb-6 bg-slate-50 border-slate-200 text-center text-lg py-3"
+                                required
+                                autoFocus
+                            />
+                            <div className="flex gap-3">
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    onClick={() => setEditingClass(null)}
+                                    className="flex-1 py-3"
+                                >
+                                    Batal
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    disabled={isAdding}
+                                    className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-orange-500 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30"
+                                >
+                                    {isAdding ? 'Menyimpan...' : 'Simpan Perubahan'}
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                </Modal>
+
                 {/* QR Code Modal */}
                 <Modal isOpen={!!viewingQrClass} onClose={() => setViewingQrClass(null)}>
                     {viewingQrClass && (
@@ -329,6 +428,7 @@ export const Classes: React.FC = () => {
                         </div>
                     )}
                 </Modal>
+
             </AdminLayout>
 
             {/* Print Layout */}

@@ -44,6 +44,10 @@ CREATE POLICY "Admin can read all reports" ON reports
 
 CREATE POLICY "Public can insert reports" ON reports
   FOR INSERT WITH CHECK (true);
+
+-- Allow authenticated users (Admins/Picket) to update reports
+CREATE POLICY "Authenticated users can update reports" ON reports
+  FOR UPDATE USING (auth.role() = 'authenticated');
 ```
 
 ## Admin Setup
@@ -52,3 +56,26 @@ To create an admin user:
 1. Go to Authentication in your Supabase dashboard
 2. Add a new user with email and password
 3. This user can login to the admin panel
+
+## Update 1: Picket Role & Enhanced Status (Run this!)
+
+Run this in your SQL Editor to support the new features:
+
+```sql
+-- 1. Add new columns for Picket Officer details
+ALTER TABLE reports 
+ADD COLUMN IF NOT EXISTS picket_name TEXT,
+ADD COLUMN IF NOT EXISTS missing_teacher_name TEXT;
+
+-- 2. Update status constraint to allow new statuses
+-- We drop the old check constraint (if it exists) and add a new comprehensive one
+ALTER TABLE reports DROP CONSTRAINT IF EXISTS reports_status_check;
+
+-- Ensure status column exists (if not present)
+ALTER TABLE reports ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending';
+
+-- Add the new constraint with all allowed values
+ALTER TABLE reports ADD CONSTRAINT reports_status_check 
+CHECK (status IN ('pending', 'resolved', 'giving_task', 'contacting_teacher'));
+```
+

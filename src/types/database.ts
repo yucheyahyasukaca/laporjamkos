@@ -34,19 +34,25 @@ export interface Database {
                     id: string
                     created_at: string
                     class_id: string
-                    status: 'pending' | 'resolved'
+                    status: 'pending' | 'resolved' | 'giving_task' | 'contacting_teacher'
+                    picket_name: string | null
+                    missing_teacher_name: string | null
                 }
                 Insert: {
                     id?: string
                     created_at?: string
                     class_id: string
-                    status?: 'pending' | 'resolved'
+                    status?: 'pending' | 'resolved' | 'giving_task' | 'contacting_teacher'
+                    picket_name?: string | null
+                    missing_teacher_name?: string | null
                 }
                 Update: {
                     id?: string
                     created_at?: string
                     class_id?: string
-                    status?: 'pending' | 'resolved'
+                    status?: 'pending' | 'resolved' | 'giving_task' | 'contacting_teacher'
+                    picket_name?: string | null
+                    missing_teacher_name?: string | null
                 }
             }
         }

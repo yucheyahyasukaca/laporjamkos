@@ -4,8 +4,9 @@ import { GlassCard } from '../components/GlassCard';
 import { Button } from '../components/Button';
 import { AdminLayout } from '../components/AdminLayout'; // Import AdminLayout
 import { supabase } from '../lib/supabase';
-import { Bell, CheckCircle, Clock, Filter, Search, Calendar } from 'lucide-react';
+import { Bell, CheckCircle, Clock, Filter, Search, Calendar, ClipboardCheck, User, UserX, BookOpen, Phone } from 'lucide-react';
 import type { Class, Report } from '../types/database';
+import { ProcessReportModal } from '../components/ProcessReportModal';
 
 interface ReportWithClass extends Report {
     classes: Class;
@@ -15,7 +16,8 @@ export const Reports: React.FC = () => {
     const [reports, setReports] = useState<ReportWithClass[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'resolved'>('all');
+    const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'resolved' | 'processed'>('all');
+    const [selectedReport, setSelectedReport] = useState<Report | null>(null);
     const [stats, setStats] = useState({
         total: 0,
         pending: 0,
@@ -83,19 +85,11 @@ export const Reports: React.FC = () => {
         };
     };
 
-    const handleResolve = async (id: string) => {
-        try {
-            const { error } = await supabase
-                .from('reports')
-                .update({ status: 'resolved' })
-                .eq('id', id);
-
-            if (error) throw error;
-            // No need to manually fetch, subscription will handle it
-        } catch (err) {
-            console.error('Error resolving report:', err);
-        }
+    const handleProcess = (report: ReportWithClass) => {
+        setSelectedReport(report);
     };
+
+
 
     const formatTime = (dateString: string) => {
         return new Date(dateString).toLocaleTimeString('id-ID', {
@@ -115,7 +109,16 @@ export const Reports: React.FC = () => {
 
     const filteredReports = reports.filter(report => {
         const matchesSearch = report.classes?.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesFilter = filterStatus === 'all' || report.status === filterStatus;
+
+        let matchesFilter = true;
+        if (filterStatus === 'pending') {
+            matchesFilter = report.status === 'pending';
+        } else if (filterStatus === 'resolved') {
+            matchesFilter = report.status === 'resolved' || report.status === 'giving_task';
+        } else if (filterStatus === 'processed') {
+            matchesFilter = report.status === 'contacting_teacher';
+        }
+
         return matchesSearch && matchesFilter;
     });
 
@@ -163,6 +166,12 @@ export const Reports: React.FC = () => {
                             Pending
                         </button>
                         <button
+                            onClick={() => setFilterStatus('processed')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterStatus === 'processed' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            Diteruskan
+                        </button>
+                        <button
                             onClick={() => setFilterStatus('resolved')}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterStatus === 'resolved' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                         >
@@ -197,27 +206,41 @@ export const Reports: React.FC = () => {
                         filteredReports.map((report) => (
                             <div
                                 key={report.id}
-                                className={`group p-4 rounded-2xl border transition-all duration-300 hover:shadow-md ${report.status === 'pending'
-                                    ? 'bg-amber-50/30 border-amber-100 hover:border-amber-200'
-                                    : 'bg-white/40 border-slate-100 hover:border-violet-100'
+                                className={`group p-4 rounded-2xl border bg-white transition-all duration-300 hover:shadow-md ${report.status === 'pending'
+                                    ? 'border-l-4 border-l-amber-500 border-slate-100'
+                                    : report.status === 'contacting_teacher'
+                                        ? 'border-l-4 border-l-purple-500 border-slate-100'
+                                        : 'border-l-4 border-l-emerald-500 border-slate-100'
                                     }`}
                             >
                                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                    <div className="flex items-start gap-4">
-                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${report.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
+                                    <div className="flex items-start gap-4 flex-1">
+                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-colors ${report.status === 'pending' ? 'bg-amber-50 text-amber-600' :
+                                            report.status === 'giving_task' ? 'bg-emerald-50 text-emerald-600' :
+                                                report.status === 'contacting_teacher' ? 'bg-purple-50 text-purple-600' :
+                                                    'bg-emerald-50 text-emerald-600'
                                             }`}>
-                                            {report.status === 'pending' ? <Bell size={24} /> : <CheckCircle size={24} />}
+                                            {report.status === 'pending' ? <Bell size={24} /> :
+                                                report.status === 'giving_task' ? <BookOpen size={24} /> :
+                                                    report.status === 'contacting_teacher' ? <Phone size={24} /> :
+                                                        <CheckCircle size={24} />}
                                         </div>
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-1">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1 flex-wrap">
                                                 <h3 className="text-lg font-bold text-slate-800">Kelas {report.classes?.name}</h3>
                                                 {report.status === 'pending' && (
-                                                    <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold uppercase tracking-wider rounded-full animate-pulse">
+                                                    <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wider rounded-full">
                                                         Baru
                                                     </span>
                                                 )}
+                                                {report.status === 'giving_task' && (
+                                                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-wider rounded-full">
+                                                        Diberi Tugas
+                                                    </span>
+                                                )}
                                             </div>
-                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+
+                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500 mb-2">
                                                 <div className="flex items-center gap-1.5">
                                                     <Calendar size={14} />
                                                     {formatDate(report.created_at)}
@@ -227,21 +250,42 @@ export const Reports: React.FC = () => {
                                                     {formatTime(report.created_at)}
                                                 </div>
                                             </div>
+
+                                            {/* Picket & Teacher Details */}
+                                            {(report.picket_name || report.missing_teacher_name) && (
+                                                <div className="flex flex-wrap gap-3 mt-2">
+                                                    {report.picket_name && (
+                                                        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg">
+                                                            <User size={12} className="text-violet-500" />
+                                                            Piket: {report.picket_name}
+                                                        </div>
+                                                    )}
+                                                    {report.missing_teacher_name && (
+                                                        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg">
+                                                            <UserX size={12} className="text-red-400" />
+                                                            Guru: {report.missing_teacher_name}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
-                                    {report.status === 'pending' ? (
+                                    {report.status !== 'resolved' && report.status !== 'giving_task' ? (
                                         <Button
-                                            onClick={() => handleResolve(report.id)}
-                                            className="w-full md:w-auto bg-white border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 text-slate-600 shadow-sm"
+                                            onClick={() => handleProcess(report)}
+                                            className={`w-full md:w-auto border shadow-sm ${report.status === 'pending'
+                                                ? 'bg-amber-500 hover:bg-amber-600 text-white border-transparent'
+                                                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                                                }`}
                                         >
-                                            <CheckCircle className="mr-2" size={18} />
-                                            Tandai Selesai
+                                            <ClipboardCheck className="mr-2" size={18} />
+                                            {report.status === 'pending' ? 'Tindak Lanjut' : 'Update Status'}
                                         </Button>
                                     ) : (
-                                        <div className="flex items-center gap-2 text-emerald-600 font-medium bg-emerald-50 px-4 py-2 rounded-xl">
+                                        <div className="flex items-center gap-2 text-emerald-600 font-medium bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100">
                                             <CheckCircle size={18} />
-                                            <span>Sudah Ditangani</span>
+                                            <span>{report.status === 'giving_task' ? 'Selesai (Tugas)' : 'Selesai'}</span>
                                         </div>
                                     )}
                                 </div>
@@ -250,6 +294,16 @@ export const Reports: React.FC = () => {
                     )}
                 </div>
             </GlassCard>
+
+            <ProcessReportModal
+                isOpen={!!selectedReport}
+                onClose={() => setSelectedReport(null)}
+                report={selectedReport}
+                onSuccess={() => {
+                    fetchReports();
+                    // Subscription should handle it, but fetch ensures immediate UI update
+                }}
+            />
         </AdminLayout>
     );
 };
