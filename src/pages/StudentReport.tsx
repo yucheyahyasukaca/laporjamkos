@@ -6,6 +6,7 @@ import { Modal } from '../components/Modal';
 import { supabase } from '../lib/supabase';
 import { QrCode, CheckCircle, AlertTriangle } from 'lucide-react';
 import type { Class } from '../types/database';
+import { APP_VERSION } from '../constants';
 
 export const StudentReport: React.FC = () => {
     const [reportingClass, setReportingClass] = useState<Class | null>(null);
@@ -80,6 +81,9 @@ export const StudentReport: React.FC = () => {
             <div className="min-h-screen flex items-center justify-center p-4">
                 <div className="max-w-md w-full animate-slideUp">
                     <div className="text-center mb-10">
+                        <div className="inline-flex items-center justify-center w-24 h-24 mb-6">
+                            <img src="/sman1pati.png" alt="Logo SMAN 1 Pati" className="w-full h-full object-contain filter drop-shadow-md" />
+                        </div>
                         <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-500 mb-4 tracking-tight drop-shadow-sm">
                             Lapor JAMKOS
                         </h1>
@@ -155,6 +159,11 @@ export const StudentReport: React.FC = () => {
                         </div>
                     )}
                 </Modal>
+            </div>
+
+            {/* Copyright Footer */}
+            <div className="absolute bottom-4 text-center w-full text-slate-400 text-xs text-shadow-sm">
+                <p>&copy; {new Date().getFullYear()} Tim IT SMAN 1 Pati. All rights reserved. <span className="opacity-50 mx-1">|</span> v{APP_VERSION}</p>
             </div>
         </Layout>
     );

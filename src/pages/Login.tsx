@@ -5,7 +5,7 @@ import { GlassCard } from '../components/GlassCard';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { supabase } from '../lib/supabase';
-import { LogIn, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { APP_VERSION } from '../constants';
 
 export const Login: React.FC = () => {
@@ -43,8 +43,8 @@ export const Login: React.FC = () => {
 
                     <GlassCard className="px-8 py-10 bg-white/80 border-white shadow-xl shadow-slate-200/50">
                         <div className="text-center mb-10">
-                            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-tr from-violet-100 to-blue-100 rounded-2xl shadow-sm mb-6 transform rotate-3 border border-white">
-                                <LogIn className="text-violet-600" size={28} />
+                            <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-sm mb-6 p-2">
+                                <img src="/sman1pati.png" alt="Logo SMAN 1 Pati" className="w-full h-full object-contain" />
                             </div>
                             <h1 className="text-3xl font-bold text-slate-800 mb-2 tracking-tight">Selamat Datang</h1>
                             <p className="text-slate-500 font-medium">Silakan login untuk mengelola kelas</p>

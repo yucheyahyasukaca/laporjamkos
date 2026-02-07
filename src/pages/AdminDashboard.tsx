@@ -2,24 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminLayout } from '../components/AdminLayout'; // Import AdminLayout
 import { GlassCard } from '../components/GlassCard';
-import { Input } from '../components/Input';
-import { Button } from '../components/Button';
-import { Modal } from '../components/Modal';
 import { supabase } from '../lib/supabase';
-import { Plus, Printer, Trash2, Bell, CheckCircle, Clock, Eye, Users, FileText, Calendar, TrendingUp, ArrowRight } from 'lucide-react';
+import { Bell, Clock, Users, FileText, Calendar, TrendingUp, ArrowRight } from 'lucide-react';
+import { Modal } from '../components/Modal';
 import { QRCodeCanvas } from 'qrcode.react';
-import type { Class, Report } from '../types/database';
+import type { Class } from '../types/database';
+import { Button } from '../components/Button';
 
-interface ReportWithClass extends Report {
-    classes: Class;
-}
+
 
 export const AdminDashboard: React.FC = () => {
-    const [classes, setClasses] = useState<Class[]>([]);
-    const [reports, setReports] = useState<ReportWithClass[]>([]);
-    const [newClassName, setNewClassName] = useState('');
     const [loading, setLoading] = useState(false);
-    const [printingClass, setPrintingClass] = useState<Class | null>(null);
     const [viewingQrClass, setViewingQrClass] = useState<Class | null>(null);
     const [stats, setStats] = useState({
         reportsToday: 0,
@@ -35,8 +28,6 @@ export const AdminDashboard: React.FC = () => {
     useEffect(() => {
         checkAuth();
         fetchDashboardData();
-        fetchClasses();
-        fetchReports();
         subscribeToReports();
         updateTime();
 
@@ -115,35 +106,14 @@ export const AdminDashboard: React.FC = () => {
         }
     };
 
-    const fetchClasses = async () => {
-        const { data } = await supabase
-            .from('classes')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (data) setClasses(data);
-    };
-
-    const fetchReports = async () => {
-        const { data } = await supabase
-            .from('reports')
-            .select('*, classes(*)')
-            .order('created_at', { ascending: false })
-            .limit(20);
-
-        if (data) setReports(data as ReportWithClass[]);
-    };
-
     const subscribeToReports = () => {
         const channel = supabase
             .channel('public:reports')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reports' }, () => {
-                fetchReports();
                 fetchDashboardData();
                 playNotificationSound();
             })
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'reports' }, () => {
-                fetchReports();
                 fetchDashboardData();
             })
             .subscribe();
@@ -158,79 +128,8 @@ export const AdminDashboard: React.FC = () => {
         audio.play().catch(() => { });
     };
 
-    const handleAddClass = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newClassName.trim()) return;
-
-        setLoading(true);
-
-        try {
-            const { error } = await supabase
-                .from('classes')
-                .insert({ name: newClassName });
-
-            if (error) throw error;
-
-            setNewClassName('');
-            fetchClasses();
-            fetchDashboardData();
-        } catch (err) {
-            console.error('Error adding class:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleDeleteClass = async (id: string) => {
-        if (!confirm('Apakah Anda yakin ingin menghapus kelas ini?')) return;
-
-        try {
-            const { error } = await supabase
-                .from('classes')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
-            fetchClasses();
-            fetchDashboardData();
-        } catch (err) {
-            console.error('Error deleting class:', err);
-        }
-    };
-
-    const handleResolveReport = async (id: string) => {
-        try {
-            const { error } = await supabase
-                .from('reports')
-                .update({ status: 'resolved' })
-                .eq('id', id);
-
-            if (error) throw error;
-            fetchReports();
-            fetchDashboardData();
-        } catch (err) {
-            console.error('Error resolving report:', err);
-        }
-    };
-
-    const handlePrint = (cls: Class) => {
-        setPrintingClass(cls);
-        setTimeout(() => window.print(), 100);
-    };
-
     const qrUrl = (token: string) => {
         return `${window.location.origin}/?token=${token}`;
-    };
-
-    const formatTime = (dateString: string) => {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / 60000);
-
-        if (diffInMinutes < 1) return 'Baru saja';
-        if (diffInMinutes < 60) return `${diffInMinutes} menit yang lalu`;
-
-        return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     };
 
     return (
@@ -412,39 +311,7 @@ export const AdminDashboard: React.FC = () => {
                 </Modal>
             </AdminLayout>
 
-            {/* Print View */}
-            {printingClass && (
-                <div className="hidden print:flex min-h-screen items-center justify-center p-8 bg-white fixed inset-0 z-[100]">
-                    <div className="text-center border-4 border-black p-12 rounded-[3rem] max-w-2xl w-full">
-                        <h1 className="text-6xl font-black mb-4 tracking-tighter">Lapor JAMKOS</h1>
-                        <div className="h-2 w-32 bg-black mx-auto mb-8"></div>
 
-                        <h2 className="text-4xl font-bold mb-12 border-b-4 border-black inline-block pb-2">
-                            KELAS {printingClass.name}
-                        </h2>
-
-                        <div className="flex justify-center mb-10">
-                            <QRCodeCanvas
-                                value={qrUrl(printingClass.token)}
-                                size={400}
-                                level="H"
-                                includeMargin
-                                imageSettings={{
-                                    src: "",
-                                    x: undefined,
-                                    y: undefined,
-                                    height: 24,
-                                    width: 24,
-                                    excavate: true,
-                                }}
-                            />
-                        </div>
-
-                        <p className="text-2xl font-bold mb-2 uppercase tracking-wide">Scan untuk lapor</p>
-                        <p className="text-lg text-gray-600">Guru tidak hadir? Scan kode ini!</p>
-                    </div>
-                </div>
-            )}
         </>
     );
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Users, FileText, LogOut, Menu } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, LogOut } from 'lucide-react';
 
 interface SidebarProps {
     onLogout: () => void;
@@ -22,9 +22,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onLogout, isOpen, setIsOpen, o
                 {/* Logo Area */}
                 <div className="p-8">
                     <div className="flex items-center gap-3 mb-1">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 to-blue-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
-                            <span className="text-white font-bold text-xl">L</span>
-                        </div>
+                        <img src="/sman1pati.png" alt="Logo SMAN 1 Pati" className="w-10 h-10 object-contain" />
                         <div>
                             <h1 className="font-bold text-slate-800 text-lg leading-tight">Lapor<br /><span className="text-violet-600">JAMKOS</span></h1>
                         </div>

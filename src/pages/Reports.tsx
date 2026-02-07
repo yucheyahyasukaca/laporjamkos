@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GlassCard } from '../components/GlassCard';
-import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { AdminLayout } from '../components/AdminLayout'; // Import AdminLayout
 import { supabase } from '../lib/supabase';
-import { Bell, CheckCircle, Clock, Filter, Search, Calendar, Menu } from 'lucide-react';
+import { Bell, CheckCircle, Clock, Filter, Search, Calendar } from 'lucide-react';
 import type { Class, Report } from '../types/database';
 
 interface ReportWithClass extends Report {
@@ -40,7 +39,7 @@ export const Reports: React.FC = () => {
     const fetchReports = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
+            const { data } = await supabase
                 .from('reports')
                 .select('*, classes(*)')
                 .order('created_at', { ascending: false });
@@ -199,8 +198,8 @@ export const Reports: React.FC = () => {
                             <div
                                 key={report.id}
                                 className={`group p-4 rounded-2xl border transition-all duration-300 hover:shadow-md ${report.status === 'pending'
-                                        ? 'bg-amber-50/30 border-amber-100 hover:border-amber-200'
-                                        : 'bg-white/40 border-slate-100 hover:border-violet-100'
+                                    ? 'bg-amber-50/30 border-amber-100 hover:border-amber-200'
+                                    : 'bg-white/40 border-slate-100 hover:border-violet-100'
                                     }`}
                             >
                                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

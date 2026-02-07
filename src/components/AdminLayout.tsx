@@ -38,7 +38,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                     {/* Mobile Header */}
                     <div className="lg:hidden p-4 flex items-center justify-between bg-white/60 backdrop-blur-md border-b border-white z-30 sticky top-0">
                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center text-white font-bold">L</div>
+                            <img src="/sman1pati.png" alt="Logo" className="w-8 h-8 object-contain" />
                             <span className="font-bold text-slate-800">LaporJAMKOS</span>
                         </div>
                         <button onClick={() => setSidebarOpen(true)} className="p-2 text-slate-600">
